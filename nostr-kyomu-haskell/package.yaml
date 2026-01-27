@@ -21,7 +21,10 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- vector
+- containers
 - text
+- aeson
 - websockets
 
 ghc-options:
