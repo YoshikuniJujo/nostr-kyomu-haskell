@@ -17,13 +17,14 @@ import Network.WebSockets
 main :: IO ()
 main = runServer "0.0.0.0" 10000 \pconn -> acceptRequest pconn >>= \conn -> do
 	fix \go -> receive conn >>= \case
-		DataMessage _ _ _ (Text rjsn _) ->
+		r@(DataMessage _ _ _ (Text rjsn _)) -> do
+			print r
 			(>> go) case recToSend =<< decode rjsn of
 				Nothing -> pure ()
 				Just (encode -> sjsn) ->
 					sendDataMessage conn $ Text sjsn Nothing
-		ControlMessage (Close _ _) -> pure ()
-		_ -> go
+		r@(ControlMessage (Close _ _)) -> print r
+		r -> print r >> go
 	sendClose conn ("Good-bye!" :: T.Text)
 
 recToSend :: Value -> Maybe Value
