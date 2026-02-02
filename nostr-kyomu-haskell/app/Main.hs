@@ -18,13 +18,14 @@ main :: IO ()
 main = runServer "0.0.0.0" 10000 \pconn -> acceptRequest pconn >>= \conn -> do
 	fix \go -> receive conn >>= \case
 		r@(DataMessage _ _ _ (Text rjsn _)) -> do
-			print r
+			putStrLn `mapM_` sep 55 (show r)
 			(>> go) case recToSend =<< decode rjsn of
 				Nothing -> pure ()
 				Just (encode -> sjsn) ->
 					sendDataMessage conn $ Text sjsn Nothing
-		r@(ControlMessage (Close _ _)) -> print r
-		r -> print r >> go
+		r@(ControlMessage (Close _ _)) ->
+			putStrLn `mapM_` sep 55 (show r)
+		r -> putStrLn `mapM_` sep 55 (show r) >> go
 	sendClose conn ("Good-bye!" :: T.Text)
 
 recToSend :: Value -> Maybe Value
@@ -36,3 +37,7 @@ recToSend = \case
 	Array (toList -> String "REQ" : String i : _) ->
 		Just $ Array [String "EOSE", String i]
 	_ -> Nothing
+
+sep :: Int -> String -> [String]
+sep _ "" = []
+sep n s = take n s : sep n (drop n s)
